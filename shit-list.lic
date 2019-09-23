@@ -48,7 +48,7 @@ class ShitListRecorder
     File.open(@file_name, "a+") do |file|
       file.each { |line| 
         if line.split(',').first.eql?(name)
-          echo "Name already exists in your shit list!"
+          DRC.message "Name already exists in your shit list!"
           exit
         end
       }
@@ -115,7 +115,7 @@ class ShitListRecorder
   def clear_list()
     File.open(@file_name, "w") {}
 
-    echo "List cleared!"
+    DRC.message "List cleared!"
   end
 end
 

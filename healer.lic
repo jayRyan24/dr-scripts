@@ -11,11 +11,11 @@ class Healer
   include DRCA
 
   def empty_hands
-    echo 'Emptying hands' if debug?
+    message 'Emptying hands' if debug?
     @left = checkleft
-    echo "@left: #{@left}" if debug?
+    message "@left: #{@left}" if debug?
     @right = checkright
-    echo "@right: #{@right}" if debug?
+    message "@right: #{@right}" if debug?
     stow_hands
   end
 
@@ -52,7 +52,7 @@ class Healer
 
   def heal_person
     name = @queue.first
-    echo "Healing #{name}" if debug?
+    message "Healing #{name}" if debug?
     @patient = name
     return if @touched && @touched >= Time.now
 
@@ -96,9 +96,9 @@ class Healer
 
   def initialize
     @right = nil
-    echo "@right: #{@right}" if debug?
+    message "@right: #{@right}" if debug?
     @left = nil
-    echo "@left: #{@left}" if debug?
+    message "@left: #{@left}" if debug?
     @queue = []
   end
 

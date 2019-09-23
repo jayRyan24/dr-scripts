@@ -15,6 +15,7 @@ class T2
     fput('avoid !join')
     fput('avoid !hold')
     fput('avoid !drag')
+    fput('awaken')
 
     @counter = 0
     @settings = get_settings
@@ -30,20 +31,30 @@ class T2
         if trainable['skill'].is_a? Array
           next if trainable['skill'].each.reject { |skill| DRSkill.getxp(skill) >= trainable['start'] }.empty?
         elsif DRSkill.getxp(trainable['skill']) >= trainable['start']
+          message "Skipping skill: #{trainable['skill']}"
           next
         elsif has_cooldown? trainable['skill']
           next unless cooldown_expired? trainable['skill']
         end
 
+        
         # At this point we know that we need to train the skill
-        echo "***STATUS*** Starting #{trainable['skill']}"
+        message "***STATUS*** Starting #{trainable['skill']}"
         execute_actions(trainable['scripts'])
         update_cooldown trainable['skill'] if has_cooldown? trainable['skill']
         break
       end
+
+      #wait_for_script_to_complete('safe-room')
+
+      if check_repair
+        repair_town = @settings.hometown
+        repair_town = @settings.repair_town if @settings.repair_town
+        wait_for_script_to_complete('repair', [repair_town]) 
+      end
     end
   end
-
+ 
   def has_cooldown?(skill)
     @settings.exp_timers.keys.include? skill
   end
@@ -57,18 +68,31 @@ class T2
   end
 
   def execute_actions(actions)
-    echo 'Action'
+    message 'Action'
     actions.each do |action|
-      echo "***STATUS*** EXECUTE #{action}"
+      message "***STATUS*** EXECUTE #{action}"
       action_parts = action.split(' ')
       script_name = action_parts.shift
       wait_for_script_to_complete(script_name, action_parts)
     end
+  end;
+  
+  def check_repair
+    return false unless should_repair_by_time
+
+    UserVars.repair_timer_snap = Time.now
+    true
+  end
+
+  def should_repair_by_time
+    return false if @repair_timer.nil?
+    return false if Time.now - UserVars.repair_timer_snap < @repair_timer
+    true
   end
 end
 
 before_dying do
-  scripts = ['magic', 'hunting-buddy', 'performance', 'athletics', 'first-aid', 'steal', 'outdoorsmanship', 'mech-lore', 'pick', 'foragetask']
+  scripts = ['magic', 'hunting-buddy', 'performance', 'athletics', 'first-aid', 'outdoorsmanship', 'bitchin-pick', 'foragetask']
   scripts.each do |script_name|
     stop_script(script_name) if Script.running?(script_name)
   end
